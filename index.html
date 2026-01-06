@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Stranger Things MQTT</title>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<style>
+body { background: black; color: red; font-family: Arial; text-align: center; margin-top: 80px; }
+h1 { font-size: 32px; letter-spacing: 3px; }
+input { width: 80%; max-width: 400px; padding: 15px; font-size: 18px; text-align: center; margin-top: 20px; }
+button { margin-top: 20px; padding: 15px 30px; font-size: 18px; background: red; color: black; border: none; cursor: pointer; }
+button:hover { background: darkred; color: white; }
+#status { margin-top: 20px; font-weight: bold; color: #aaa; }
+</style>
+</head>
+<body>
+
+<h1>STRANGER THINGS</h1>
+<p>Nachricht an die Lichterkette senden</p>
+
+<input id="msg" placeholder="NUR A–Z & Leerzeichen" maxlength="50">
+<br>
+<button onclick="sendMessage()">SENDEN</button>
+<div id="status">Verbinde mit HiveMQ…</div>
+
+<script>
+const status = document.getElementById("status");
+
+// MQTT Browser-Verbindung (TLS / WSS)
+const client = mqtt.connect(
+  "wss://9b3eca39646244d0b59420f551ecf29e.s1.eu.hivemq.cloud:8884",
+  {
+    username: "Melanie",
+    password: "Melanie1.",
+    clean: true,
+    connectTimeout: 20000, // 20 Sekunden Timeout
+    reconnectPeriod: 5000   // reconnect alle 5 Sekunden
+  }
+);
+
+client.on("connect", () => {
+  status.innerText = "🟢 Verbunden mit HiveMQ";
+  status.style.color = "lime";
+});
+
+client.on("error", (err) => {
+  console.error(err);
+  status.innerText = "🔴 Fehler: " + err.message;
+  status.style.color = "red";
+});
+
+client.on("reconnect", () => {
+  status.innerText = "⏳ Versuche erneut zu verbinden…";
+  status.style.color = "#ffa500";
+});
+
+function sendMessage() {
+  let text = document.getElementById("msg").value;
+  text = text.toUpperCase().replace(/[^A-Z ]/g, "");
+  if(text.length === 0) return;
+  client.publish("Melanie", text);
+  document.getElementById("msg").value = "";
+}
+</script>
+
+</body>
+</html>
